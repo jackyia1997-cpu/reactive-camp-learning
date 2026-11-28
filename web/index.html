@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>亡羊补牢 · 测试网</title>
+<style>
+  :root { color-scheme: dark; font-family: "Microsoft YaHei", system-ui, sans-serif; background: #10181c; color: #edf3f2; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; }
+  main { max-width: 960px; margin: auto; padding: 50px 20px; }
+  header { margin-bottom: 28px; }
+  h1 { margin: .35rem 0; font-size: clamp(2.3rem, 7vw, 4rem); }
+  h2 { margin: 0 0 12px; }
+  p, li { line-height: 1.6; }
+  section { background: #17252a; padding: 22px; border: 1px solid #35454c; border-radius: 15px; margin-bottom: 16px; }
+  form, dl { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+  form label { display: grid; gap: 7px; }
+  input, select, button { padding: .7rem .9rem; border-radius: 8px; border: 1px solid #52656c; font: inherit; }
+  input, select { background: #10181c; color: inherit; width: 100%; }
+  button { background: #a8efd2; color: #10241d; font-weight: 700; cursor: pointer; }
+  button.secondary { background: #203237; color: #edf3f2; }
+  button:disabled { background: #33434a; color: #bdc9cd; cursor: default; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  a, .accent { color: #a8efd2; }
+  .muted, dt { color: #b2c3c8; }
+  dd { margin: .2rem 0 0; overflow-wrap: anywhere; }
+  #message { min-height: 1.6em; margin: .8rem 0 0; overflow-wrap: anywhere; }
+  #history { padding-left: 20px; }
+  #history li { margin: .45rem 0; }
+  @media(max-width:600px) { form, dl { grid-template-columns: 1fr; } }
+</style>
+<main>
+  <header>
+    <p class="accent">Sepolia + Reactive Lasna</p>
+    <h1>亡羊补牢</h1>
+    <p>设定大额转出的救援规则，把剩余且已授权的测试代币转到保险箱。</p>
+    <div class="actions">
+      <button id="connect">连接测试钱包</button>
+      <button id="demo" class="secondary">查看已跑通的测试网案例</button>
+      <span id="account" class="muted"></span>
+    </div>
+    <p id="message" role="status" aria-live="polite"></p>
+  </header>
+  <section id="setup">
+    <h2>启用保护</h2>
+    <p class="muted">使用自己的测试钱包和 Sepolia 测试代币。需要 Sepolia ETH 和 lREACT，钱包将逐笔显示费用与签名确认。</p>
+    <form id="settings">
+      <label>Sepolia 测试代币地址 <input name="token" required pattern="0x[0-9a-fA-F]{40}" spellcheck="false" autocomplete="off"></label>
+      <label>保险箱地址 <input name="vault" required pattern="0x[0-9a-fA-F]{40}" spellcheck="false" autocomplete="off"></label>
+      <label>单笔触发门槛 <input name="threshold" required inputmode="decimal" value="100"></label>
+      <label>最高授权额度 <input name="cap" required inputmode="decimal" value="1000"></label>
+      <label>最多救援次数
+        <select name="limit">
+          <option value="1">1 次</option><option value="2">2 次</option><option value="3" selected>3 次</option>
+          <option value="4">4 次</option><option value="5">5 次</option>
+        </select>
+      </label>
+      <div class="actions"><button id="prepare" type="submit" disabled>检查配置</button></div>
+    </form>
+    <div id="deployment" hidden>
+      <p id="rule"></p>
+      <ol id="steps" class="muted"></ol>
+      <div class="actions">
+        <button id="next"></button>
+        <button id="change" class="secondary">修改配置</button>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="actions"><h2>保护状态</h2><button id="refresh" class="secondary" disabled>刷新链上状态</button></div>
+    <dl id="status"><div><dt>当前状态</dt><dd>选择测试网案例或启用一份新保护。</dd></div></dl>
+    <div class="actions">
+      <button id="pause" class="secondary" hidden>暂停保护</button>
+      <button id="mode" class="secondary" hidden>切换为仅提醒</button>
+    </div>
+    <p id="pause-note" class="muted" hidden>暂停确认后，新的事件会跳过。已发出的救援请求仍可能执行。</p>
+    <p id="mode-note" class="muted" hidden>仅提醒会在 Lasna 记录符合规则的转出。刷新下方记录即可查看。切换模式需要钱包签名。</p>
+  </section>
+  <section>
+    <h2>风险与救援记录</h2>
+    <p id="history-note" class="muted">读取 Lasna 风险事件和 Sepolia 救援结果。</p>
+    <ul id="history"></ul>
+  </section>
+  <section id="trusted" hidden>
+    <h2>常用收款地址</h2>
+    <p class="muted">转到这些地址会跳过自动救援。只添加你确认过的地址。</p>
+    <form id="trusted-form">
+      <label>收款地址 <input name="recipient" required pattern="0x[0-9a-fA-F]{40}" spellcheck="false"></label>
+      <div class="actions">
+        <button type="submit">查链上状态</button>
+        <button id="add-trusted" type="button" disabled>设为可信</button>
+        <button id="remove-trusted" class="secondary" type="button" disabled>移除</button>
+      </div>
+    </form>
+    <p id="trusted-result" role="status" aria-live="polite"></p>
+  </section>
+</main>
+<script type="module" src="/app.mjs"></script>
+</html>

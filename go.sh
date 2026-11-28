@@ -32,7 +32,7 @@ save() { # save KEY VALUE
   echo "$1=$2" >> "$STATE.tmp"; mv "$STATE.tmp" "$STATE"
   export "$1=$2"
 }
-need() { command -v "$1" >/dev/null 2>&1 || die "找不到 $1。先按 TONIGHT.md 装好 Foundry，并执行 export PATH=\"\$HOME/.foundry/bin:\$PATH\""; }
+need() { command -v "$1" >/dev/null 2>&1 || die "找不到 $1。先按 README.md 装好 Foundry，并执行 export PATH=\"\$HOME/.foundry/bin:\$PATH\""; }
 
 need forge; need cast; need git
 
@@ -150,11 +150,11 @@ case "$cmd" in
       lf="$TX3_LASNA_FROM"; sf="$TX3_SEP_FROM"
       say "等 Lasna 上的 react() …"
       h=$(wait_log "$LASNA_RPC_URL" "$REACTIVE_ADDR" "CallbackRequested(uint256,address,uint256)" "$lf") \
-        || die "3 分钟没等到 react()。看 TONIGHT.md 排错表（多半是 lREACT 不够或订阅没匹配）。"
+        || die "3 分钟没等到 react()。看 README.md 的「出问题怎么办」（多半是 lREACT 不够或订阅没匹配）。"
       save TX3_REACT "$h"
       say "等 Sepolia 上的回调 …"
       h=$(wait_log "$SEPOLIA_RPC_URL" "$CALLBACK_ADDR" "Handled(address,uint256,uint256,uint256,uint256)" "$sf") \
-        || die "3 分钟没等到回调。看 TONIGHT.md 排错表（多半是回调合约没 ETH 或 Proxy 地址）。"
+        || die "3 分钟没等到回调。看 README.md 的「出问题怎么办」（多半是回调合约没 ETH 或 Proxy 地址）。"
       save TX3_CALLBACK "$h"
     fi
     say "三步走完成 ✅"
@@ -182,11 +182,11 @@ case "$cmd" in
       lf="$TXR_LASNA_FROM"; sf="$TXR_SEP_FROM"
       say "等 Lasna 哨兵判断 …"
       h=$(wait_log "$LASNA_RPC_URL" "$GUARD_ADDR" "RescueRequested(uint256,uint256,uint256)" "$lf") \
-        || die "3 分钟没等到哨兵触发。看 TONIGHT.md 排错表。"
+        || die "3 分钟没等到哨兵触发。看 README.md 的「出问题怎么办」。"
       save TXR_REACT "$h"
       say "等 Sepolia 救援回调 …"
       h=$(wait_log "$SEPOLIA_RPC_URL" "$GUARDIAN_ADDR" "Rescued(uint256,uint256,uint256,uint256)" "$sf") \
-        || die "3 分钟没等到救援回调。看 TONIGHT.md 排错表。"
+        || die "3 分钟没等到救援回调。看 README.md 的「出问题怎么办」。"
       save TXR_CALLBACK "$h"
     fi
     say "PRAC 余额（单位 PRAC）"

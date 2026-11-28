@@ -16,7 +16,7 @@ contract GuardReactive is AbstractReactive {
 
     /// keccak256("Transfer(address,address,uint256)")
     uint256 public constant TRANSFER_TOPIC_0 = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
-    uint64 public constant CALLBACK_GAS_LIMIT = 500_000;
+    uint64 public constant CALLBACK_GAS_LIMIT = 1_000_000;
 
     address public immutable OWNER;
     uint256 public immutable ORIGIN_CHAIN_ID;
@@ -29,13 +29,19 @@ contract GuardReactive is AbstractReactive {
     uint256 public threshold;
     uint256 public remaining;
     bool public paused;
+    bool public alertOnly;
 
     mapping(bytes32 => bool) public seen;
+    mapping(address => bool) public trustedRecipients;
     uint256 public lastTxHash;
     uint256 public lastReactBlock;
 
     event Seen(uint256 indexed originTxHash, address indexed to, uint256 amount);
     event RescueRequested(uint256 indexed originTxHash, uint256 logIndex, uint256 amount);
+
+    event RiskAlert(uint256 indexed originTxHash, address indexed recipient, uint256 logIndex, uint256 amount);
+    event AlertModeUpdated(bool alertOnly);
+    event TrustedRecipientUpdated(address indexed recipient, bool trusted);
 
     modifier onlyOwner() {
         if (msg.sender != OWNER) revert NotOwner();
@@ -73,6 +79,17 @@ contract GuardReactive is AbstractReactive {
         threshold = threshold_;
     }
 
+    function setTrustedRecipient(address recipient_, bool trusted_) external onlyOwner {
+        if (recipient_ == address(0)) revert ZeroAddress();
+        trustedRecipients[recipient_] = trusted_;
+        emit TrustedRecipientUpdated(recipient_, trusted_);
+    }
+
+    function setAlertOnly(bool enabled_) external onlyOwner {
+        alertOnly = enabled_;
+        emit AlertModeUpdated(enabled_);
+    }
+
     function setPaused(bool paused_) external onlyOwner {
         paused = paused_;
     }
@@ -96,12 +113,17 @@ contract GuardReactive is AbstractReactive {
         lastReactBlock = block.number;
         emit Seen(log_.txHash, to, amount);
 
-        if (to == SAFE) return; // 救援本身转给安全地址，不再触发
+        if (to == SAFE || trustedRecipients[to]) return; // 保险箱与常用收款地址跳过救援
         if (amount < threshold) return;
 
         bytes32 key = keccak256(abi.encode(log_.chainId, log_.txHash, log_.logIndex));
         if (seen[key]) return;
         seen[key] = true;
+
+        if (alertOnly) {
+            emit RiskAlert(log_.txHash, to, log_.logIndex, amount);
+            return;
+        }
 
         remaining -= 1;
         if (remaining == 0) {

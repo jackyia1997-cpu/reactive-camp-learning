@@ -48,6 +48,12 @@ bash go.sh setup      # 下载依赖 + forge test
 
 新版测试网页支持连接钱包、逐步部署、限额授权和查看链上记录。新版守护合约增加了可信收款地址和仅提醒模式。仅提醒把符合规则的转出记录到 Lasna，保留钱包余额和救援次数。以上新功能已经过本地测试，测试网链上证据对应已部署的自动救援版本。
 
+### 在本机打开测试网页
+
+安装 Node.js 22 后，在仓库根目录运行 `node web/server.mjs`，打开终端显示的本机地址。点击「查看已跑通的测试网案例」即可查看链上的 700 PRAC 到账记录。新建保护时可选择最多 1–5 次救援。用新钱包从网页完整部署和触发救援还待测试网验收。
+
+[测试网页使用说明](web/使用说明.md)
+
 ## 上链复现
 
 前提：装好 Foundry；`cast wallet import camp --interactive` 导入**测试专用**钱包；地址上有 Sepolia ETH 和 lREACT；MetaMask 里另建一个账户当安全地址。
@@ -91,6 +97,15 @@ bash go.sh proof     # 打印所有合约地址和交易链接
 | Sepolia chainId | 11155111 | https://dev.reactive.network/origins-and-destinations |
 | Sepolia Callback Proxy | `0xAa14d9Cd0f788Ca23d11805986C1d8bd035D23b4` | 同上 |
 | lREACT 水龙头（Sepolia） | `0x9b9BB25f1A81078C544C829c5EB7822d747Cf434`，1 ETH → 100 lREACT，单笔 ≤ 5 ETH | https://dev.reactive.network/reactive-mainnet |
+
+## 训练营作业
+
+- [用例拆解卡](notes/d1-use-case.md)
+- [项目方向卡](notes/project-direction.md)
+- [Lasna 费用笔记](notes/lasna-fees.md)
+- [救援测试代码](test/Rescue.t.sol)
+
+根目录的 `Rescue.t.sol` 保留此前已提交的作业链接。运行 Foundry 时使用 `test/` 下的当前测试。
 
 ## 致谢与 AI 使用说明
 
