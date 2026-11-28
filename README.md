@@ -13,7 +13,7 @@ Reactive Builder Camp 项目，赛道 2「Set It and Forget It」。
 ```
 Sepolia 钱包转出 300 PRAC
   ↓
-Lasna 收到转账事件，检查门槛和收款方是否为风险地址，发出救援请求
+Lasna 收到转账事件，检查金额门槛和收款方，符合规则时发出救援请求
   ↓
 Sepolia 的救援合约把剩余 700 PRAC 转入保险箱
 ```
@@ -42,7 +42,7 @@ Sepolia 的救援合约把剩余 700 PRAC 转入保险箱
 bash go.sh setup      # 下载依赖 + forge test
 ```
 
-本机最新版 27 个测试全部通过：营地模板 8 个 + 救援 19 个（被盗触发救援、低于阈值不触发、转给安全地址不触发、同一事件两次只回调一次、重复投递不重复搬、单次/累计上限、只搬 approve 的额度、冒充调用被拒、非受保护地址转出不触发、暂停与次数上限、只有 owner 能改配置）。
+27 项测试通过，覆盖救援、去重、额度限制和权限检查。[救援测试代码](test/Rescue.t.sol)
 
 ## 本机开发进度
 
@@ -79,33 +79,7 @@ bash go.sh proof     # 打印所有合约地址和交易链接
 | RescueGuardian | [Sepolia 合约](https://sepolia.etherscan.io/address/0x842e030365aad60d021f4e20ed02ea55180e2066) |
 | PracticeToken | [Sepolia 练习币](https://sepolia.etherscan.io/address/0x978fe8c66dcc5288bd62ce340d110404f13f9ca5) |
 
-### 训练营模板三步走
-
-| 步骤 | 链接 |
-|---|---|
-| ① Sepolia Ping | [源交易](https://sepolia.etherscan.io/tx/0x8f39d22cc0cead2f77fc173e52f03ce9b55dd6a532f99e3c231ba474cf2c654e) |
-| ② Lasna react() | [Reactive 交易](https://lasna.reactscan.net/tx/0x48f94ec18d55ea8a4fc517482c80951e4ef1bc909e2ee666fdc340e6cdad96cc) |
-| ③ Sepolia 回调 Handled | [回调交易](https://sepolia.etherscan.io/tx/0xb4ffe2adae1b383fbe39ebbb600677e72895716ec56f1c866771f1536963c9a3) |
-
-## 网络与地址（2026-11-18 对照官方文档核对）
-
-| 项 | 值 | 来源 |
-|---|---|---|
-| Lasna RPC / chainId | `https://lasna-rpc.rnk.dev/` / 5318007 | https://dev.reactive.network/reactive-mainnet |
-| Lasna 浏览器 | https://lasna.reactscan.net/ | 同上 |
-| 系统合约 | `0x8888888888888888888888888888888888888888` | 同上 |
-| Sepolia chainId | 11155111 | https://dev.reactive.network/origins-and-destinations |
-| Sepolia Callback Proxy | `0xAa14d9Cd0f788Ca23d11805986C1d8bd035D23b4` | 同上 |
-| lREACT 水龙头（Sepolia） | `0x9b9BB25f1A81078C544C829c5EB7822d747Cf434`，1 ETH → 100 lREACT，单笔 ≤ 5 ETH | https://dev.reactive.network/reactive-mainnet |
-
-## 训练营作业
-
-- [用例拆解卡](notes/d1-use-case.md)
-- [项目方向卡](notes/project-direction.md)
-- [Lasna 费用笔记](notes/lasna-fees.md)
-- [救援测试代码](test/Rescue.t.sol)
-
-根目录的 `Rescue.t.sol` 保留此前已提交的作业链接。运行 Foundry 时使用 `test/` 下的当前测试。
+[测试网配置与公共地址](docs/testnet-reference.md) · [训练营模板实测记录](notes/template-callback.md) · [训练营作业笔记](notes/)
 
 ## 致谢与 AI 使用说明
 
